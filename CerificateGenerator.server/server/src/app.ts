@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
-
+import path from 'path';
+import corsOptions from './config/cors.config';
+import authRoutes from './routes/auth.routes';
+import { requestLogger } from './middlewares/logger.middlewares';
+import { errorHandler } from './middlewares/error.middlewares';
 
 const app = express();
 
@@ -12,6 +16,10 @@ app.use(cors(corsOptions));               // Handle cross-origin requests from t
 app.use(express.json());                  // Parse incoming JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded form data
 app.use(requestLogger);                   // Log every request for debugging
+
+// ─── API Routes ───────────────────────────────────────────────────
+// Each route module handles a specific feature area of the app
+app.use('/api/auth', authRoutes);                // Login, register, token management
 
 // ─── Health Check ─────────────────────────────────────────────────
 // Quick endpoint to confirm the server is alive (useful for monitoring)

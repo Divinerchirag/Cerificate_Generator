@@ -3,7 +3,11 @@ import cors from "cors";
 import path from 'path';
 import corsOptions from './config/cors.config';
 import authRoutes from './routes/auth.routes';
+<<<<<<< HEAD
 import templateRoutes from "./routes/template.routes";
+=======
+import adminRoutes from './routes/admin.routes';
+>>>>>>> fd108fc (Added admin role in to the server)
 import { requestLogger } from './middlewares/logger.middlewares';
 import { errorHandler } from './middlewares/error.middlewares';
 
@@ -26,7 +30,11 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // ─── API Routes ───────────────────────────────────────────────────
 // Each route module handles a specific feature area of the app
 app.use('/api/auth', authRoutes);                // Login, register, token management
+<<<<<<< HEAD
 app.use('/api/templates', templateRoutes);       // Upload & manage certificate templates
+=======
+app.use('/api/admin', adminRoutes);              // Admin panel operations
+>>>>>>> fd108fc (Added admin role in to the server)
 
 
 // ─── Health Check ─────────────────────────────────────────────────

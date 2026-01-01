@@ -8,13 +8,24 @@ export default function App() {
     const { isAuthenticated } = useAuth();
 
     return (
-        <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />} />
-          
+      <Routes>
+        {/* Public routes */}
+        <Route
+          path="/login"
+          element={
+            isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />
+          }
+        />
 
-            {/* Default redirect */}
-            <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} />} />
-        </Routes>
+        {/* Protected routes with sidebar layout */}
+        <Route path="/template-designer" element={<ProtectedRoute><Layout><TemplateDesigner /></Layout></ProtectedRoute>}/>
+
+        
+        {/* Default redirect */}
+        <Route
+          path="*"
+          element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}
+        />
+      </Routes>
     );
 }

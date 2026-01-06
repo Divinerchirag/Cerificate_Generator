@@ -1,14 +1,21 @@
-import dotenv from "dotenv";
-import app from "./app";
+import app from './app';
+import { pool } from './config/db';
 
-// Load environment variables from .env file before anything else
-dotenv.config();
+const PORT = process.env.PORT || 4000;
 
-// Use the port from environment or default to 5000
-const PORT = process.env.PORT || 5000;
-
+// Verify database connection before starting server
+pool.connect()
+  .then(() => {
+    console.log('Connected to PostgreSQL Database');
 
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(` Server is running on http://localhost:${PORT}`);
+      console.log(` API Documentation: http://localhost:${PORT}/`);
     });
+  })
+  .catch((err) => {
+    console.error('PostgreSQL connection failed:', err.message);
+    process.exit(1);
+  });
+
 

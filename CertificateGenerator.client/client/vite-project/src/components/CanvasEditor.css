@@ -1,0 +1,127 @@
+/* Layout */
+.editor-container {
+    display: flex;
+    height: 100vh;
+    background-color: #0f172a;
+    font-family: Arial, sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background-color: #1e293b;
+    border-right: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #334155;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 12px;
+    font-size: 12px;
+    text-transform: capitalize;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.tab-button:hover {
+    background-color: #334155;
+    color: white;
+}
+
+.active-tab {
+    background-color: #334155;
+    color: white;
+}
+
+.tab-content {
+    padding: 16px;
+    color: white;
+}
+
+/* Main Area */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Toolbar */
+.toolbar {
+    height: 56px;
+    background-color: #1e293b;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+}
+
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    gap: 8px;
+}
+
+/* Buttons */
+.btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background-color: #334155;
+    color: white;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background-color: #475569;
+}
+
+.btn.primary {
+    background-color: #2563eb;
+}
+
+.btn.primary:hover {
+    background-color: #1d4ed8;
+}
+
+.btn.danger {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.btn.danger:hover {
+    background-color: rgba(239, 68, 68, 0.4);
+}
+
+.btn.gradient {
+    background: linear-gradient(to right, #7c3aed, #ec4899);
+}
+
+.btn.gradient:hover {
+    opacity: 0.9;
+}
+
+/* Canvas */
+.canvas-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+    padding: 32px;
+}
+
+.canvas-shadow {
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}

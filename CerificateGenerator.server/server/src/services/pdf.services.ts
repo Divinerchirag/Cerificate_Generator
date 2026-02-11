@@ -9,6 +9,7 @@ function getFieldValue(
   fieldType: string,
   data: CertificateData["certificate"],
   label?: string,
+  defaultValue?: string,
 ): string {
   const shortCode = data.verification_code;
   const shortId = data.id.split("-")[0].toUpperCase();
@@ -39,8 +40,8 @@ function getFieldValue(
     case "verification_link":
       return `sarvarth.com/verify/${shortCode}`;
     default:
-      // For custom text fields, use the label the user typed in the designer
-      return label || fieldType;
+      // For custom text fields, use ONLY the default value (no fallback to label)
+      return defaultValue || "";
   }
 }
 
@@ -68,10 +69,7 @@ export async function generateCertificatePdf(
 
   // Load template image
   // Strip leading slash for path.join compatibility on Windows
-  const normalizedImagePath = template.template_image_path.replace(
-    /^[/\\]+/,
-    "",
-  );
+  const normalizedImagePath = template.template_image_path.replace(/^[/\\]+/, "");
   const templateImagePath = path.join(
     __dirname,
     "..",
@@ -101,9 +99,7 @@ export async function generateCertificatePdf(
       image = await pdfDoc.embedJpg(imageBytes);
     }
   } catch (embedError: any) {
-    console.warn(
-      `[PDF] Embedding as ${ext} failed. Attempting fallback... Error: ${embedError.message}`,
-    );
+    console.warn(`[PDF] Embedding as ${ext} failed. Attempting fallback... Error: ${embedError.message}`);
     // If PNG failed, try JPG. If JPG failed, try PNG.
     try {
       if (ext === ".png") {
@@ -146,7 +142,6 @@ export async function generateCertificatePdf(
     { regular: typeof helvetica; bold: typeof helveticaBold }
   > = {
     Helvetica: { regular: helvetica, bold: helveticaBold },
-    "Times-Roman": { regular: timesRoman, bold: timesRomanBold },
     TimesRoman: { regular: timesRoman, bold: timesRomanBold },
     Courier: { regular: courier, bold: courierBold },
   };
@@ -171,7 +166,7 @@ export async function generateCertificatePdf(
 
   // Draw each field onto the PDF
   for (const field of fields) {
-    const text = getFieldValue(field.field_type, certificate, field.label);
+    const text = getFieldValue(field.field_type, certificate, field.label, field.default_value);
 
     if (!text) {
       console.warn(`[PDF] Skipping empty field: "${field.field_type}"`);

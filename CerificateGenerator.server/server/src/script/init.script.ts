@@ -70,6 +70,20 @@ export async function initDb(): Promise<void> {
             END $$;
         `);
 
+        // Add default_value column to template_fields
+        await pool.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'template_fields' 
+                    AND column_name = 'default_value'
+                ) THEN
+                    ALTER TABLE template_fields ADD COLUMN default_value TEXT;
+                END IF;
+            END $$;
+        `);
+
         console.log('Database tables initialized and verified');
 
         // Seed admin user
@@ -87,6 +101,12 @@ export async function initDb(): Promise<void> {
             );
             console.log('Admin user seeded (admin@sarvarth.com / admin123)');
         }
+
+        // Ensure upload and generated directories exist
+        const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+        const generatedDir = path.join(__dirname, '..', '..', 'generated');
+        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+        if (!fs.existsSync(generatedDir)) fs.mkdirSync(generatedDir, { recursive: true });
 
     } catch (error) {
         console.error('Database initialization failed:', error);

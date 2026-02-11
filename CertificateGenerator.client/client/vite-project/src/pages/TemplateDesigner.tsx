@@ -15,6 +15,7 @@ interface Field {
   is_bold: boolean;
   is_italic: boolean;
   text_align: string;
+  default_value?: string;
 }
 
 interface Template {
@@ -195,6 +196,19 @@ export default function TemplateDesigner() {
           position_y: f.position_y ?? 50,
         })),
       );
+
+      // Populate preview values from loaded fields' default_value
+      const previews: Record<string, string> = {
+        student_name: "",
+        course_name: "",
+        completion_date: "",
+      };
+      loadedFields.forEach((f: any) => {
+        if (f.default_value) {
+          previews[f.field_type] = f.default_value;
+        }
+      });
+      setPreviewValues(previews);
 
       setPreviewCertId(loadedTemplate.preview_certificate_id || "");
       setPreviewVerifCode(loadedTemplate.preview_verification_code || "");
@@ -377,14 +391,21 @@ export default function TemplateDesigner() {
       console.log(
         `[Designer] Saving fields with canvas: ${displayWidth}x${displayHeight}`,
       );
-      fields.forEach((f) => {
+
+      // Merge preview values into fields as default_value
+      const fieldsWithDefaults = fields.map((f) => ({
+        ...f,
+        default_value: previewValues[f.field_type] || f.default_value,
+      }));
+
+      fieldsWithDefaults.forEach((f) => {
         console.log(
-          `  -> ${f.field_type}: (${f.position_x.toFixed(1)}, ${f.position_y.toFixed(1)}) size=${f.font_size}`,
+          `  -> ${f.field_type}: (${f.position_x.toFixed(1)}, ${f.position_y.toFixed(1)}) size=${f.font_size}${f.default_value ? ` default="${f.default_value}"` : ""}`,
         );
       });
 
       const res = await api.put(`/templates/${selectedTemplate.id}/fields`, {
-        fields,
+        fields: fieldsWithDefaults,
         canvas_width: displayWidth,
         canvas_height: displayHeight,
       });
@@ -409,6 +430,14 @@ export default function TemplateDesigner() {
       showToast(
         "success",
         `Fields saved! New IDs — Certificate: ${newCertId}, Verification: ${newVerifCode}`,
+      );
+
+      // Update fields with the default_value to persist preview values
+      setFields((prev) =>
+        prev.map((f) => ({
+          ...f,
+          default_value: previewValues[f.field_type] || f.default_value,
+        })),
       );
     } catch (err: any) {
       const msg = err?.response?.data?.error || "Failed to save fields.";
@@ -531,6 +560,59 @@ export default function TemplateDesigner() {
                     </div>
                   </div>
                 )}
+                {/* Add Fields */}
+                {selectedTemplate && (
+                  <div className="card">
+                    <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
+                      Add Fields
+                    </h3>
+                    <div className="field-list">
+                      {FIELD_TYPES.map((ft) => {
+                        const isAdded = fields.some(
+                          (f) => f.field_type === ft.type,
+                        );
+                        return (
+                          <div
+                            key={ft.type}
+                            className={`field-item ${isAdded ? "selected" : ""}`}
+                            onClick={() =>
+                              !isAdded && addField(ft.type, ft.label)
+                            }
+                            style={
+                              isAdded
+                                ? {
+                                    opacity: 0.6,
+                                    cursor: "default",
+                                  }
+                                : {}
+                            }
+                          >
+                            <span>{ft.label}</span>
+                            {isAdded ? (
+                              <span
+                                onClick={() => selectedField && removeField(selectedField.id)}
+                                style={{
+                                  color: "var(--primary-light)",
+                                  fontSize: "0.8rem",
+                                }}
+                              >
+                                Remove
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  color: "#046429",
+                                }}
+                              >
+                                ADD
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <button className="btn" onClick={() => setIsModalOpen(false)}>
                   Close
                 </button>
@@ -551,90 +633,46 @@ export default function TemplateDesigner() {
           {selectedTemplate && (
             <div className="card">
               <h3 style={{ marginBottom: "12px", fontSize: "0.95rem" }}>
-                Add Fields
+                Add Text
               </h3>
-              <div className="field-list">
-                {FIELD_TYPES.map((ft) => {
-                  const isAdded = fields.some((f) => f.field_type === ft.type);
-                  return (
-                    <div
-                      key={ft.type}
-                      className={`field-item ${isAdded ? "selected" : ""}`}
-                      onClick={() => !isAdded && addField(ft.type, ft.label)}
-                      style={
-                        isAdded
-                          ? {
-                              opacity: 0.6,
-                              cursor: "default",
-                            }
-                          : {}
-                      }
-                    >
-                      <span>{ft.label}</span>
-                      {isAdded ? (
-                        <span
-                          onClick={() => removeField(selectedField.id)}
-                          style={{
-                            color: "var(--primary-light)",
-                            fontSize: "0.8rem",
-                          }}
-                        >
-                          Remove
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            color: "#046429",
-                          }}
-                        >
-                          ADD
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {!showCustomInput ? (
-                  <div
-                    className="field-item"
-                    onClick={() => setShowCustomInput(true)}
-                    style={{ borderStyle: "dashed" }}
+              {!showCustomInput ? (
+                <div
+                  className="field-item"
+                  onClick={() => setShowCustomInput(true)}
+                  style={{ borderStyle: "dashed" }}
+                >
+                  <span>Custom Text</span>
+                  <span style={{ color: "#046429" }}>ADD</span>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "center",
+                    padding: "4px 0",
+                  }}
+                >
+                  <input
+                    className="input"
+                    placeholder="Field label"
+                    value={customFieldLabel}
+                    onChange={(e) => setCustomFieldLabel(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addCustomField()}
+                    autoFocus
+                    style={{ flex: 1, fontSize: "0.85rem" }}
+                  />
+                  <button
+                    className="btn "
+                    onClick={addCustomField}
+                    style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}
                   >
-                    <span>Custom Text</span>
-                    <span style={{ color: "#046429" }}>ADD</span>
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "8px",
-                      alignItems: "center",
-                      padding: "4px 0",
-                    }}
-                  >
-                    <input
-                      className="input"
-                      placeholder="Field label"
-                      value={customFieldLabel}
-                      onChange={(e) => setCustomFieldLabel(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addCustomField()}
-                      autoFocus
-                      style={{ flex: 1, fontSize: "0.85rem" }}
-                    />
-                    <button
-                      className="btn "
-                      onClick={addCustomField}
-                      style={{ whiteSpace: "nowrap", fontSize: "0.8rem", }}
-                    >
-                      Add
-                    </button>
-                    
-                  </div>
-                )}
-              </div>
+                    Add
+                  </button>
+                </div>
+              )}
             </div>
           )}
-
           {/* Field Data Inputs */}
           {selectedTemplate && fields.length > 0 && (
             <div className="card">
@@ -652,7 +690,6 @@ export default function TemplateDesigner() {
                 {fields.map((field) => {
                   const fieldDef = FIELD_TYPES.find(
                     (ft) => ft.type === field.field_type,
-                    
                   );
                   const effectiveDef = fieldDef || {
                     type: field.field_type,
@@ -660,7 +697,6 @@ export default function TemplateDesigner() {
                     inputType: "text",
                     placeholder: "Enter custom text",
                   };
-                  
 
                   if (effectiveDef.inputType === "auto") {
                     const displayValue =
@@ -794,7 +830,6 @@ export default function TemplateDesigner() {
                   onChange={(e) => updateField("is_italic", e.target.checked)}
                 />
               </div>
-
             </div>
           )}
 

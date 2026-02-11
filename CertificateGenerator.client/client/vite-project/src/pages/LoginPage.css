@@ -1,80 +1,106 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
-import './LoginPage.css';
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e3e3e5;
+}
 
-export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
-    const navigate = useNavigate();
+.login-container {
+    background: white;
+    width: 100%;
+    height: 400px;
+    max-width: 350px;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+.login-header {
+    margin: 32px;
+    text-align: center;
+}
 
-        if (!email || !password) {
-            setError('Email and password are required.');
-            return;
-        }
+.login-logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+}
 
-        setLoading(true);
-        try {
-            const res = await api.post('/auth/login', { email, password });
-            login(res.data.token, res.data.user);
-            navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard');
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Login failed. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
+.login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
 
-    return (
-        <div className="login-page">
-            <div className="login-container">
-                <div className="login-header">
-                    <img src="/assets/sarvarth-logo.jpg" alt="Sarvarth" className="login-logo" />
-                </div>
+.input-row {
+    width: 100%;
+}
 
-                <form className="login-form" onSubmit={handleSubmit}>
-                    {error && <div className="login-error">{error}</div>}
+.input-minimal {
+    width: 100%;
+    padding: 14px 16px;
+    background: #e3e6ea;
+    /* Very light cool gray */
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-family);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
 
-                    <div className="input-row">
-                        <input
-                            id="email"
-                            type="email"
-                            className="input-minimal"
-                            placeholder="Username"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            autoFocus
-                        />
-                    </div>
+.input-minimal::placeholder {
+    color: #555556;
+}
 
-                    <div className="input-row">
-                        <input
-                            id="password"
-                            type="password"
-                            className="input-minimal"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                    </div>
+.input-minimal:focus {
+    outline: none;
+    background: #f1f5f9;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.621);
+}
 
-                    <button
-                        type="submit"
-                        className="btn-login-custom"
-                        disabled={loading || !email || !password}
-                    >
-                        {loading ? <span className="spinner" /> : 'Login'}
-                    </button>
-                </form>
-            </div>
-        </div>
-    );
+.btn-login-custom {
+    margin-top: 8px;
+    width: 100%;
+    padding: 14px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-family: var(--font-family);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-login-custom:hover {
+    background: #dc2626;
+}
+
+.btn-login-custom:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.login-error {
+    border-radius: 6px;
+    color: #ef4444;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        max-width: 90%;
+        padding: 32px 24px;
+    }
 }
